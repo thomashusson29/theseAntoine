@@ -209,6 +209,7 @@ table5 <- df %>%
 table5
 
 ##-------colonnes à inclure 6-----
+#je maj pour voir ! 
 
 
 
