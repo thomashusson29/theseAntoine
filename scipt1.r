@@ -209,7 +209,157 @@ table5 <- df %>%
 table5
 
 ##-------colonnes à inclure 6-----
-#je maj pour voir ! 
+cols_to_include6 <- c(
+  "plaie_digestive_perop_YN",
+  "plaie_vasculaire_perop_YN",
+  "other_intraop_complication",
+  "other_intraop_complication_text",
+  "hemorragie_perop_YN"
+)
+
+table6 <- df %>% 
+  tbl_summary(
+    include = all_of(cols_to_include6)
+  )
+
+table6
+
+##-------colonnes à inclure 7-----
+cols_to_include7 <- c(
+  "vasopresseur_per_op_YN",
+  "vasopresseur_concentration_mg_h",
+  "hb_per_op",
+  "transfusion_perop_YN",
+  "nb_CGR",
+  "transfusion_PFC_YN",
+  "PFC_nb",
+  "transfusion_plaquettes_YN",
+  "pq_nb",
+  "anapath",
+  "nutrition_parentérale",
+  "nutrition_entérale"
+)
+
+table7 <- df %>% 
+  tbl_summary(
+    include = all_of(cols_to_include7),
+    missing = "ifany",
+    type=list(
+      vasopresseur_concentration_mg_h ~ "continuous",
+      hb_per_op ~ "continuous",
+      nb_CGR ~ "continuous",
+      PFC_nb ~ "continuous"
+    )
+  )
+
+table7
+
+##-------colonnes à inclure 8-----
+cols_to_include8 <- c(
+  "ATB_YN",
+  "imidazole",
+  "ureidopenicilline",
+  "carbapeneme",
+  "C4G",
+  "aminoside",
+  "C3G",
+  "glycopeptide",
+  "vancomycine",
+  "ATB_adapte_vanco",
+  "ATB_adapte_amin",
+  "ATF_proba",
+  "ambisome",
+  "echinocandine",
+  "ATF_adapte",
+  "doc_microbio",
+  "CMV_YN",
+  "bact1",
+  "bact2",
+  "bact3",
+  "bact_site",
+  "champi",
+  "champi_whole",
+  "champi_site",
+  "ag_aspergillaire_YN"
+)
+
+library(gtsummary)
+
+table8 <- df %>% 
+  tbl_summary(
+    include = all_of(cols_to_include8)
+  )
+
+table8
+
+##-------colonnes à inclure 9-----
+cols_to_include9 <- c(
+  "complications_post_op",
+  "sepsis_postop_YN",
+  "anastomotic_leakage",
+  "intraabdominal_abcess_or_collection",
+  "Bleeding_YN",
+  "intra_abdominal_hematoma",
+  "wound_complication",
+  "radiological_drainage_for_complication",
+  "peritonite",
+  "reoperation_for_complication",
+  "details_reoperation_for_complication",
+  "stoma_for_complication",
+  "ileus",
+  "stoma_related_complication",
+  "anastomotic_bleeding",
+  "anemia_transfusion",
+  "infection_urinaire",
+  "insuffisance_renale",
+  "acute_urinary_retention",
+  "pneumopathie",
+  "MTEV",
+  "catheter_infection",
+  "dehydratation_IV_fluids",
+  "poor_control_of_pain",
+  "other_sepsis",
+  "ClavienDindo"
+)
+
+table9 <- df %>% 
+  tbl_summary(
+    include = all_of(cols_to_include9)
+  )
+
+table9
+
+
+##-------colonnes à inclure 10-----
+cols_to_include10 <- c(
+    "Medical_complications",
+    "all_septic",
+    "readmission_within_30d",
+    "retablissement_YN",
+    "delai_chirurgie_retablissement",
+    "remission_maladie_6mois_YN",
+    "remission_maladie_1an_YN",
+    "rechute_maladie_6mois_YN",
+    "rechute_maladie_1an_YN",
+    "maladie_refractaire_1an_YN",
+    "last_news"
+  )
+
+table10 <- df %>% 
+  tbl_summary(
+    include = all_of(cols_to_include10),
+    type = list(
+      delai_chirurgie_retablissement ~ "continuous"
+    )
+  )
+
+table10
 
 
 
+
+peux tu regarder Rstudio c'est pour un travail sur 12 patients opérés d'une colite neutropénique  toutes les infos sont dans df  je veux que tu regardes caractéristiques préop lignes de traitement médicales caractéristiques chirurgicales résultats postop   il faut faire tourner les stats dans tous les sens pour essayer des associations / trucs sifgnificatifs quelqu'ils soient
+
+
+et surtout si tu me donnes un script : il faut qu'il parte de df
+et soit "standalone" (si tu crées des vecteurs, donne les trucs que tu as utilisé pour les créer)
