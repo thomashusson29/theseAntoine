@@ -1,0 +1,112 @@
+---
+format:
+  pdf:
+    pdf-engine: xelatex
+---
+
+# Tests comparatifs Wilcoxon / Fisher entre les groupes de la variable dépendante "deces_hospit_YN" pour les variables sélectionnées
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# library et import de DATABASE_2026.xlsx
+library(readxl)
+df <- read_excel("DATABASE_2026.xlsx")
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# tbl_summary de database_2026 en faisant test de Fisher pour les variables catégorielles et test de Wilcoxon pour les variables continues
+library(gtsummary)
+
+cols_to_include1 <- c("age_année", "sex_male", "BMI", "maladie_inaugurale_YN", "Charlson_Comorbidity_total")
+
+#recodage de la variable dépendante en facteur
+df$deces_hospit_YN <- as.factor(df$deces_hospit_YN)
+df$deces_hospit_YN <- factor(df$deces_hospit_YN, levels = c(0, 1), labels = c("Survivors", "Deceased"))
+
+summary_table <- df %>%
+  tbl_summary(
+    by = "deces_hospit_YN",
+    include = all_of(cols_to_include1),
+    statistic = list(
+      all_continuous() ~ "{median} ({p25}, {p75})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "no",
+    label = list(
+      `age_année` ~ "Age (years)",
+      sex_male ~ "Sex (Male)",
+      BMI ~ "BMI (kg/m2)",
+      maladie_inaugurale_YN ~ "Inaugural Disease (Yes/No)",
+      Charlson_Comorbidity_total ~ "Charlson Comorbidity Index (Total)"
+    ),
+    #forcer Charlson en quantitatif
+    type = list(Charlson_Comorbidity_total ~ "continuous")
+  ) %>%
+  add_p(test = list(
+    all_continuous() ~ "wilcox.test",
+    all_categorical() ~ "fisher.test"
+  )) %>%
+  modify_header(label = "**Variable**") %>%
+  bold_labels()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| results : asis
+# Affichage propre pour render quarto vers PDF (LaTeX)
+summary_table %>%
+  as_kable(
+    format = "pipe",
+    caption = "Comparative Tests (Wilcoxon / Fisher) Between Groups of the Dependent Variable 'deces_hospit_YN' for Selected Variables"
+  )
+```
+
+# Calcul des OR et IC95% par plusieurs régressions logistiques univariées des variables sélectionnées
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(broom)
+library(dplyr)
+library(knitr)
+cols_to_include2 <- c("age_année", "sex_male", "BMI", "maladie_inaugurale_YN", "Charlson_Comorbidity_total", "deces_hospit_YN")
+
+# Fonction pour effectuer la régression logistique univariée et extraire les résultats
+run_logistic_regression <- function(var_name, data) {
+  formula <- as.formula(paste("deces_hospit_YN ~", var_name))
+  model <- glm(formula, data = data, family = binomial)
+  tidy_model <- tidy(model, conf.int = TRUE, exponentiate = TRUE)
+  tidy_model$variable <- var_name
+  return(tidy_model)
+}
+
+# Appliquer la fonction à chaque variable et combiner les résultats
+results_list <- lapply(cols_to_include2[cols_to_include2 != "deces_hospit_YN"], run_logistic_regression, data = df)
+results_df <- do.call(rbind, results_list)
+results_df <- results_df[results_df$term != "(Intercept)", ]
+results_df <- results_df[, c("variable", "term", "estimate", "conf.low", "conf.high", "p.value")]
+colnames(results_df) <- c("Variable", "Level", "OR", "CI Lower", "CI Upper", "p-value")
+
+# Affichage propre pour render quarto vers PDF (LaTeX)
+results_df_display <- results_df %>%
+  mutate(
+    `OR (95% CI)` = sprintf("%.2f (%.2f, %.2f)", OR, `CI Lower`, `CI Upper`),
+    `p-value` = ifelse(`p-value` < 0.001, "<0.001", sprintf("%.3f", `p-value`))
+  ) %>%
+  select(Variable, `OR (95% CI)`, `p-value`)
+
+kable(
+  results_df_display,
+  format = "pipe",
+  caption = "Odds Ratios and 95% Confidence Intervals from Univariate Logistic Regressions",
+  align = c("l", "l", "r")
+)
+```
